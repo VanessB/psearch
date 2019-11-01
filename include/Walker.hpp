@@ -23,7 +23,7 @@ public:
     Walker& operator =(Walker&& other) = delete;
     Walker& operator =(const Walker& other) = delete;
 
-    void walk(std::filesystem::path& walk_path);
+    void walk(std::filesystem::path& walk_path, bool recursively);
     void search();
 
 protected:

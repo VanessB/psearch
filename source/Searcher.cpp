@@ -2,6 +2,7 @@
 #include <iostream>
 
 //#define DEBUG_OUTPUT_SEARCHER_SEARCH
+#define NEW_SEARCH
 
 ////////////////       KMP       ///////////////
 // Класс, реализующий автомат Кнута-Морриса-Пратта.

@@ -11,7 +11,7 @@ Walker::Walker(std::shared_ptr<Searcher> init_searcher)
     searcher = init_searcher;
 }
 
-void Walker::walk(std::filesystem::path& walk_path)
+void Walker::walk(std::filesystem::path& walk_path, bool recursively)
 {
     walking.store(true);
     std::vector<std::filesystem::path> buffer;
@@ -20,25 +20,54 @@ void Walker::walk(std::filesystem::path& walk_path)
     std::cout << "Обнаруженные файлы: " << std::endl;
     #endif
 
-    // Рекурсивнй обход по директориям.
-    for (auto& path: std::filesystem::recursive_directory_iterator(walk_path))
+    // TODO: сделать что-то с этим тупым копипастом кода.
+    // Рекурсивный обход директори.
+    if (recursively)
     {
-        // Проверка, является ли найденный файл обычным.
-        if (std::filesystem::is_regular_file(path))
+        for (auto& path: std::filesystem::recursive_directory_iterator(walk_path))
         {
-            // Добавление файла в буффер.
-            #ifdef DEBUG_OUTPUT_WALKER_WALK
-            std::cout << path << std::endl;
-            #endif
-            buffer.push_back(path);
-
-            // Если буффер наполнился, происходит его сброс в общую очередь.
-            if (buffer.size() >= walk_buffer_size)
+            // Проверка, является ли найденный файл обычным.
+            if (std::filesystem::is_regular_file(path))
             {
-                std::unique_lock<std::shared_mutex> lock(mutex_files);
-                for (auto& iter: buffer) { files.push(iter); }
-                buffer.clear();
-                condition_files.notify_all(); // Оповещение, что в очередь добавлены новые файлы.
+                // Добавление файла в буффер.
+                #ifdef DEBUG_OUTPUT_WALKER_WALK
+                std::cout << path << std::endl;
+                #endif
+                buffer.push_back(path);
+
+                // Если буффер наполнился, происходит его сброс в общую очередь.
+                if (buffer.size() >= walk_buffer_size)
+                {
+                    std::unique_lock<std::shared_mutex> lock(mutex_files);
+                    for (auto& iter: buffer) { files.push(iter); }
+                    buffer.clear();
+                    condition_files.notify_all(); // Оповещение, что в очередь добавлены новые файлы.
+                }
+            }
+        }
+    }
+    // Нерекурсивный обход директории.
+    else
+    {
+        for (auto& path: std::filesystem::directory_iterator(walk_path))
+        {
+            // Проверка, является ли найденный файл обычным.
+            if (std::filesystem::is_regular_file(path))
+            {
+                // Добавление файла в буффер.
+                #ifdef DEBUG_OUTPUT_WALKER_WALK
+                std::cout << path << std::endl;
+                #endif
+                buffer.push_back(path);
+
+                // Если буффер наполнился, происходит его сброс в общую очередь.
+                if (buffer.size() >= walk_buffer_size)
+                {
+                    std::unique_lock<std::shared_mutex> lock(mutex_files);
+                    for (auto& iter: buffer) { files.push(iter); }
+                    buffer.clear();
+                    condition_files.notify_all(); // Оповещение, что в очередь добавлены новые файлы.
+                }
             }
         }
     }
