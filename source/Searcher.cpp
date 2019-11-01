@@ -2,7 +2,6 @@
 #include <iostream>
 
 //#define DEBUG_OUTPUT_SEARCHER_SEARCH
-#define NEW_SEARCH
 
 ////////////////       KMP       ///////////////
 // Класс, реализующий автомат Кнута-Морриса-Пратта.
@@ -71,10 +70,7 @@ void KMP::search(std::istream& stream, std::vector<Searcher::Entry>& entries) co
     const size_t str_size = pattern.size();
 
     // Вспомогательные переменные.
-    size_t state = 0;         // Текущее состояние автомата.
-    char ch = 0;              // Прочитанный символ.
-    //size_t offset = 0;        // Смещение в строке.
-    //size_t global_offset = 0; // Глобальное смещение.
+    size_t state = 0; // Текущее состояние автомата.
 
     // Структура для сохранения информации о вхождении.
     Searcher::Entry entry;
@@ -82,34 +78,24 @@ void KMP::search(std::istream& stream, std::vector<Searcher::Entry>& entries) co
     entry.entries_number = 0;
 
     // Цикл поиска.
-    while(stream.get(ch))
+    while(std::getline(stream, entry.line))
     {
-        //std::cout << int((unsigned char)(ch)) << std::endl;
-        // Обработка перехода на новую строку.
-        if (ch == '\n')
+        for (size_t i = 0; i < entry.line.size(); ++i)
         {
-            //offset = 0;
-            if (entry.entries_number) { entries.push_back(entry); }
-            entry.entries_number = 0;
-            ++entry.line_number;
-            entry.line.clear();
-
-            #ifdef DEBUG_OUTPUT_SEARCHER_SEARCH
-            std::cout << "Line:" << entry.line_number << std::endl;
-            #endif
+            state = states_table[state * char_size + static_cast<size_t>(static_cast<unsigned char>(entry.line[i]))];
+            if (state == str_size)
+            { ++entry.entries_number; }
+            //entry.entries_number += (state == str_size);
         }
-        else { entry.line.push_back(ch); }
-        //line += (ch == '\n');
-        //offset *= (ch != '\n');
 
-        state = states_table[state * char_size + static_cast<size_t>(static_cast<unsigned char>(ch))];
-        if (state == str_size)
-        {
-            //std::cout << "Подстрока найдена на " << line << " строке со смещением " << offset - str_size << std::endl;
-            ++entry.entries_number;
-        }
-        //++offset;
-        //++global_offset;
+        if (entry.entries_number) { entries.push_back(entry); }
+        entry.entries_number = 0;
+        ++entry.line_number;
+        entry.line.clear();
+
+        #ifdef DEBUG_OUTPUT_SEARCHER_SEARCH
+        std::cout << "Line:" << entry.line_number << std::endl;
+        #endif
     }
 }
 
