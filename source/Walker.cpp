@@ -122,6 +122,14 @@ void Walker::search()
                 std::ifstream file_stream(current_file);
                 searcher->search(file_stream, entries);
                 buffer.pop();
+
+                if (!entries.empty())
+                {
+                    std::unique_lock<std::mutex> lock(mutex_output);
+                    for (auto entry : entries)
+                    { std::cout << current_file << "\t " << entry.line_number << ": " << entry.line << std::endl; }
+                    entries.clear();
+                }
             }
         }
 
@@ -143,12 +151,6 @@ void Walker::search()
                 condition_files.wait(wait_lock);
             }
         }
-    }
-
-    {
-        std::unique_lock<std::mutex> lock(mutex_output);
-        for (auto entry : entries)
-        { std::cout << entry.line_number << ": " << entry.line << std::endl; }
     }
 }
 
