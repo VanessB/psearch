@@ -17,6 +17,6 @@ add_executable(psearch ${SOURCES}) # Using variable SOURCES.
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wpedantic -Wextra -fexceptions -O0 -g3 -ggdb --std=c++17")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall -Wextra -O3 --std=c++17")
 
-# Math
+# Linking
 target_link_libraries(psearch pthread)
 target_link_libraries(psearch stdc++fs)

@@ -61,6 +61,24 @@ private:
 
 };
 
+
+// Глобальные константы для вывода информации.
+const std::string version   = "1.0";
+const std::string title_text = "psearch версия " + version;
+const std::string help_text  =
+ R"(
+Параметры:
+--help, -h                    Показать справку.
+<pattern> <keys>              Поиск подстроки pattern в текущей директории с ключами keys.
+<pattern> <keys> <path>       Поиск подстроки pattern в директории path с ключами keys.
+
+Ключи:
+-t<n>                         Запустить поиск в n потоков.
+-n                            Нерекурсивный поиск.
+-b                            Запустить программу в режиме измерения времени.
+)";
+
+
 int main(int argc, char* argv[])
 {
     int threads_number = -1;
@@ -73,6 +91,17 @@ int main(int argc, char* argv[])
     {
         // Получение обязательного аргумента: образца.
         if (argc < 2) { throw invalid_arguments(invalid_arguments::code::missing, "pattern (образец)."); }
+
+        // Возможно, требуется вывод справки.
+        {
+            std::string argument(argv[1]);
+            if ((argument == "--help") || (argument == "-h"))
+            {
+                std::cout << title_text << std::endl << help_text << std::endl;
+                return 0;
+            }
+        }
+
         pattern = std::string(argv[1]);
 
         // Получение дополнительных аргументов.
